@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Game of Three</title>
+    <link href="/webjars/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/main.css" rel="stylesheet">
+    <script src="/webjars/jquery/jquery.min.js"></script>
+    <script src="/webjars/sockjs-client/sockjs.min.js"></script>
+    <script src="/webjars/stomp-websocket/stomp.min.js"></script>
+    <script src="/app.js"></script>
+</head>
+<body>
+<noscript><h2 style="color: #ff0000">Seems your browser doesn't support Javascript! Websocket relies on Javascript being
+    enabled. Please enable
+    Javascript and reload this page!</h2></noscript>
+<div id="main-content" class="container">
+    <div class="row">
+        <div class="col-md-6">
+            <form class="form-inline">
+                <div class="form-group">
+                    <label for="random_number">Choose a random number:</label>
+                    <input type="text" id="random_number" class="form-control" placeholder="Your random number...">
+                </div>
+                <button id="send" class="btn btn-default" type="submit">Send</button>
+            </form>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="random_number">Add:</label>
+                <button id="send_-1" class="btn btn-default">-1</button>
+                <button id="send_0" class="btn btn-default">+0</button>
+                <button id="send_1" class="btn btn-default">+1</button>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <table id="numbers" class="table table-striped">
+                <thead>
+                <tr>
+                    <th>Numbers</th>
+                </tr>
+                </thead>
+                <tbody id="app-message">
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+</html>
