@@ -20,6 +20,11 @@ The receiving player can now always choose between adding one of  {­1, 0, 1} to
 
 ### Testing
 
+This app have a CI pipeline using Github hooks, Travis-CI, and Heroku host for deployment:
+
+https://travis-ci.org/hishamaborob/game-of-three-hisham
+https://game-of-three-hisham.herokuapp.com/
+
 Application can be built with: 
 ```sh
 $ mvn clean install
