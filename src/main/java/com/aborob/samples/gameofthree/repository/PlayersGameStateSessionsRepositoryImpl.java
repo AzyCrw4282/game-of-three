@@ -68,17 +68,11 @@ public class PlayersGameStateSessionsRepositoryImpl implements PlayersGameStateS
 
     @Async
     @Override
-    public CompletableFuture<Boolean> resetGameState(String sessionIdStarter) {
+    public CompletableFuture<Boolean> removeGameState(String sessionIdStarter) {
 
         GameState oldGameState = this.players.get(sessionIdStarter);
-
-        GameState gameStateStarter = new GameState();
-        gameStateStarter.setGameOn(false);
-        GameState secondPlayerGameState = new GameState();
-        secondPlayerGameState.setGameOn(false);
-        this.players.put(new String(oldGameState.getRivalSession()), secondPlayerGameState);
-        this.players.put(new String(sessionIdStarter), gameStateStarter);
-
+        this.players.remove(oldGameState.getRivalSession());
+        this.players.remove(sessionIdStarter);
         return CompletableFuture.completedFuture(true);
     }
 }

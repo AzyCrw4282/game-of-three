@@ -15,5 +15,5 @@ public interface PlayersGameStateSessionsRepository {
 
     public CompletableFuture<Boolean> switchGameState(String sessionIdStarter, Integer NewNumber);
 
-    public CompletableFuture<Boolean> resetGameState(String sessionIdStarter);
+    public CompletableFuture<Boolean> removeGameState(String sessionIdStarter);
 }

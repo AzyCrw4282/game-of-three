@@ -21,101 +21,121 @@ import java.security.Principal;
 @Controller
 public class GameController {
 
-    @Autowired
-    private GameOfThreeService gameOfThreeService;
+	@Autowired
+	private GameOfThreeService gameOfThreeService;
 
-    @Autowired
-    private PlayersGameStateSessionsRepository playersGameStateSessionsRepository;
+	@Autowired
+	private PlayersGameStateSessionsRepository playersGameStateSessionsRepository;
 
-    @Autowired
-    private SimpMessagingTemplate simpMessagingTemplate;
+	@Autowired
+	private SimpMessagingTemplate simpMessagingTemplate;
 
-    private final static String QUEUE_RIVAL_NUMBER = "/queue/rival/number";
+	private final static String QUEUE_RIVAL_NUMBER = "/queue/rival/number";
 
-    /**
-     * Handles game' first number and assign users as rivals.
-     *
-     * @param numberMessage
-     * @param messageRequest
-     * @throws Exception
-     */
-    @MessageMapping("/random_number")
-    public void random_number(@Payload NumberMessage numberMessage, Message<Object> messageRequest) throws Exception {
+	/**
+	 * Handles game' first number and assign users as rivals.
+	 *
+	 * @param numberMessage
+	 * @param messageRequest
+	 * @throws Exception
+	 */
+	@MessageMapping("/random_number")
+	public void random_number(@Payload NumberMessage numberMessage, Message<Object> messageRequest) throws Exception {
 
-        String sessionId = messageRequest.getHeaders()
-                .get(SimpMessageHeaderAccessor.USER_HEADER, Principal.class).getName();
-        Integer numberStarter = numberMessage.getNumber();
+		String sessionId = messageRequest.getHeaders()
+				.get(SimpMessageHeaderAccessor.USER_HEADER, Principal.class).getName();
+		if (!this.validateSession(sessionId)) {
+			return;
+		}
+		Integer numberStarter = numberMessage.getNumber();
 
-        NumberMessage numberMessageResponse = this.gameOfThreeService.startGame(sessionId, numberStarter);
+		NumberMessage numberMessageResponse = this.gameOfThreeService.startGame(sessionId, numberStarter);
 
-        if (numberMessageResponse.getStatus() == NumberMessage.NO_ERROR) {
+		if (numberMessageResponse.getStatus() == NumberMessage.NO_ERROR) {
 
-            GameState gameState = this.playersGameStateSessionsRepository.getGameStateSession(sessionId);
-            this.simpMessagingTemplate.convertAndSendToUser(gameState.getRivalSession(),
-                    QUEUE_RIVAL_NUMBER, numberMessageResponse);
-            numberMessageResponse.setStatus(NumberMessage.WAIT);
-            numberMessageResponse.setMessage("Wait rival move!");
-            this.simpMessagingTemplate.convertAndSendToUser(sessionId, QUEUE_RIVAL_NUMBER, numberMessageResponse);
-        } else {
-            this.simpMessagingTemplate.convertAndSendToUser(sessionId, QUEUE_RIVAL_NUMBER, numberMessageResponse);
-        }
+			GameState gameState = this.playersGameStateSessionsRepository.getGameStateSession(sessionId);
+			this.simpMessagingTemplate.convertAndSendToUser(gameState.getRivalSession(),
+					QUEUE_RIVAL_NUMBER, numberMessageResponse);
+			numberMessageResponse.setStatus(NumberMessage.WAIT);
+			numberMessageResponse.setMessage("Wait rival move!");
+			this.simpMessagingTemplate.convertAndSendToUser(sessionId, QUEUE_RIVAL_NUMBER, numberMessageResponse);
+		} else {
+			this.simpMessagingTemplate.convertAndSendToUser(sessionId, QUEUE_RIVAL_NUMBER, numberMessageResponse);
+		}
 
-    }
+	}
 
-    /**
-     * Handles further additions until game session reset.
-     *
-     * @param numberMessage
-     * @param messageRequest
-     * @throws Exception
-     */
-    @MessageMapping("/addition_number")
-    public void addition_number(
-            @Payload NumberMessage numberMessage, Message<Object> messageRequest) throws Exception {
+	/**
+	 * Handles further additions until game session reset.
+	 *
+	 * @param numberMessage
+	 * @param messageRequest
+	 * @throws Exception
+	 */
+	@MessageMapping("/addition_number")
+	public void addition_number(
+			@Payload NumberMessage numberMessage, Message<Object> messageRequest) throws Exception {
 
-        String sessionId = messageRequest.getHeaders()
-                .get(SimpMessageHeaderAccessor.USER_HEADER, Principal.class).getName();
-        String rivalSessionId = null;
+		String sessionId = messageRequest.getHeaders()
+				.get(SimpMessageHeaderAccessor.USER_HEADER, Principal.class).getName();
 
-        try {
+		if (!this.validateSession(sessionId)) {
+			return;
+		}
+		String rivalSessionId = null;
 
-            rivalSessionId = new String(
-                    this.playersGameStateSessionsRepository.getGameStateSession(sessionId).getRivalSession());
-        } catch (NullPointerException e) {
-            e.printStackTrace();
-        }
+		try {
 
-        NumberMessage numberMessageResponse = this.gameOfThreeService.addNumber(sessionId, numberMessage.getAddition());
+			rivalSessionId = new String(
+					this.playersGameStateSessionsRepository.getGameStateSession(sessionId).getRivalSession());
+		} catch (NullPointerException e) {
+			e.printStackTrace();
+		}
 
-        if (numberMessageResponse.getStatus() == NumberMessage.NO_ERROR
-                || numberMessageResponse.getStatus() == NumberMessage.WRONG) {
+		NumberMessage numberMessageResponse = this.gameOfThreeService.addNumber(sessionId, numberMessage.getAddition());
 
-            this.simpMessagingTemplate.convertAndSendToUser(rivalSessionId,
-                    QUEUE_RIVAL_NUMBER, numberMessageResponse);
-            this.simpMessagingTemplate.convertAndSendToUser(sessionId,
-                    QUEUE_RIVAL_NUMBER, numberMessageResponse);
-        } else if (numberMessageResponse.getStatus() == NumberMessage.WIN) {
-            this.simpMessagingTemplate.convertAndSendToUser(sessionId,
-                    QUEUE_RIVAL_NUMBER, numberMessageResponse);
-            numberMessageResponse.setMessage("Loser!");
-            this.simpMessagingTemplate.convertAndSendToUser(rivalSessionId,
-                    QUEUE_RIVAL_NUMBER, numberMessageResponse);
-        } else {
-            this.simpMessagingTemplate.convertAndSendToUser(sessionId,
-                    QUEUE_RIVAL_NUMBER, numberMessageResponse);
-        }
+		if (numberMessageResponse.getStatus() == NumberMessage.NO_ERROR
+				|| numberMessageResponse.getStatus() == NumberMessage.WRONG) {
 
-    }
+			this.simpMessagingTemplate.convertAndSendToUser(rivalSessionId,
+					QUEUE_RIVAL_NUMBER, numberMessageResponse);
+			this.simpMessagingTemplate.convertAndSendToUser(sessionId,
+					QUEUE_RIVAL_NUMBER, numberMessageResponse);
+		} else if (numberMessageResponse.getStatus() == NumberMessage.WIN) {
+			this.simpMessagingTemplate.convertAndSendToUser(sessionId,
+					QUEUE_RIVAL_NUMBER, numberMessageResponse);
+			numberMessageResponse.setMessage("Loser! .. Refresh to play again!");
+			this.simpMessagingTemplate.convertAndSendToUser(rivalSessionId,
+					QUEUE_RIVAL_NUMBER, numberMessageResponse);
+		} else {
+			this.simpMessagingTemplate.convertAndSendToUser(sessionId,
+					QUEUE_RIVAL_NUMBER, numberMessageResponse);
+		}
 
-    /**
-     * Basic general exceptions handler.
-     *
-     * @param e
-     */
-    @MessageExceptionHandler
-    public void handleException(Throwable e) {
+	}
 
-        e.printStackTrace();
-    }
+	private boolean validateSession(String sessionId) {
+
+		boolean sessionExist = this.playersGameStateSessionsRepository.getGameStateSession(sessionId)
+				== null ? false : true;
+
+		if (!sessionExist) {
+			this.simpMessagingTemplate.convertAndSendToUser(sessionId, QUEUE_RIVAL_NUMBER,
+					new NumberMessage(0, 0, NumberMessage.ERROR,
+							"Refresh to play again!"));
+		}
+		return sessionExist;
+	}
+
+	/**
+	 * Basic general exceptions handler.
+	 *
+	 * @param e
+	 */
+	@MessageExceptionHandler
+	public void handleException(Throwable e) {
+
+		e.printStackTrace();
+	}
 
 }

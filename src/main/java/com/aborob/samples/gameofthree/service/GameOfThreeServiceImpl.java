@@ -73,11 +73,9 @@ public class GameOfThreeServiceImpl implements GameOfThreeService {
 
         newNumber = newNumber / 3;
         if (newNumber == 1) {
-            this.playersWaitingQueueRepository.addPlayer(gameState.getRivalSession());
-            this.playersWaitingQueueRepository.addPlayer(sessionId);
-            this.playersGameStateSessionsRepository.resetGameState(sessionId);
+            this.playersGameStateSessionsRepository.removeGameState(sessionId);
             return new NumberMessage(
-                    newNumber, additionNumber, NumberMessage.WIN, "Winner!");
+                    newNumber, additionNumber, NumberMessage.WIN, "Winner! .. Refresh to play again!");
         } else {
             this.playersGameStateSessionsRepository.switchGameState(sessionId, new Integer(newNumber));
             return new NumberMessage(
