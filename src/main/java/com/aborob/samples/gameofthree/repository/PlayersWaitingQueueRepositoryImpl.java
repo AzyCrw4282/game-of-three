@@ -16,11 +16,11 @@ public class PlayersWaitingQueueRepositoryImpl implements PlayersWaitingQueueRep
 
     @Async
     @Override
-    public CompletableFuture<Boolean> addPlayer(String sessionId) {
+    public CompletableFuture<Boolean> addPlayer(final String sessionId) {
 
-        synchronized (this.queue) {
+        synchronized (queue) {
 
-            this.queue.add(new String(sessionId));
+            queue.add(sessionId);
         }
         return CompletableFuture.completedFuture(true);
     }
@@ -31,12 +31,12 @@ public class PlayersWaitingQueueRepositoryImpl implements PlayersWaitingQueueRep
         String receiver = null;
         synchronized (this.queue) {
 
-            if (this.queue.size() >= 2) {
+            if (queue.size() >= 2) {
 
-                if (this.queue.remove(starterPlayerSession)) {
-                    Iterator<String> iterator = this.queue.iterator();
+                if (queue.remove(starterPlayerSession)) {
+                    Iterator<String> iterator = queue.iterator();
                     receiver = iterator.next();
-                    this.queue.remove(receiver);
+                    queue.remove(receiver);
                 }
             }
         }

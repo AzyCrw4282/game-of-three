@@ -5,7 +5,7 @@ import java.util.concurrent.CompletableFuture;
 
 public interface PlayersWaitingQueueRepository {
 
-    public CompletableFuture<Boolean> addPlayer(String sessionId);
+    public CompletableFuture<Boolean> addPlayer(final String sessionId);
 
-    public Optional<String> findWaitingRival(String starterPlayerSession);
+    public Optional<String> findWaitingRival(final String starterPlayerSession);
 }

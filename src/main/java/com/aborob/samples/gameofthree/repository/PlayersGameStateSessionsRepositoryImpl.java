@@ -1,10 +1,11 @@
 package com.aborob.samples.gameofthree.repository;
 
-import com.aborob.samples.gameofthree.model.GameState;
+import com.aborob.samples.gameofthree.entity.GameState;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Repository;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -18,33 +19,39 @@ public class PlayersGameStateSessionsRepositoryImpl implements PlayersGameStateS
 
     @Async
     @Override
-    public CompletableFuture<Boolean> addGameStateSession(String sessionId, GameState gameState) {
+    public CompletableFuture<Boolean> addGameStateSession(final String sessionId, final GameState gameState) {
 
-        this.players.put(sessionId, gameState);
+        players.put(sessionId, gameState);
         return CompletableFuture.completedFuture(true);
     }
 
     @Override
-    public GameState getGameStateSession(String sessionId) {
+    public Optional<GameState> getGameStateSession(final String sessionId) {
 
-        return this.players.get(sessionId);
+        return Optional.ofNullable(players.get(sessionId));
+    }
+
+    @Override
+    public boolean isGameStateSessionExist(final String sessionId) {
+
+        return players.containsKey(sessionId);
     }
 
     @Async
     @Override
     public CompletableFuture<Boolean> startGameStateSession(
-            String sessionIdStarter, String sessionIdRival, Integer number) {
+            final String sessionIdStarter, final String sessionIdRival, final Integer number) {
 
-        GameState gameStateStarter = this.players.get(sessionIdStarter);
+        GameState gameStateStarter = players.get(sessionIdStarter);
 
         gameStateStarter.setGameOn(true);
-        gameStateStarter.setRivalSession(new String(sessionIdRival));
+        gameStateStarter.setRivalSession(sessionIdRival);
         gameStateStarter.setWaitRivalMove(true);
         gameStateStarter.setCurrentNumber(number);
 
-        GameState secondPlayerGameState = this.players.get(sessionIdRival);
+        GameState secondPlayerGameState = players.get(sessionIdRival);
         secondPlayerGameState.setGameOn(true);
-        secondPlayerGameState.setRivalSession(new String(sessionIdStarter));
+        secondPlayerGameState.setRivalSession(sessionIdStarter);
         secondPlayerGameState.setWaitRivalMove(false);
         secondPlayerGameState.setCurrentNumber(number);
 
@@ -53,13 +60,13 @@ public class PlayersGameStateSessionsRepositoryImpl implements PlayersGameStateS
 
     @Async
     @Override
-    public CompletableFuture<Boolean> switchGameState(String sessionIdStarter, Integer NewNumber) {
+    public CompletableFuture<Boolean> switchGameState(final String sessionIdStarter, final Integer NewNumber) {
 
-        GameState gameStateStarter = this.players.get(sessionIdStarter);
+        GameState gameStateStarter = players.get(sessionIdStarter);
         gameStateStarter.setWaitRivalMove(true);
         gameStateStarter.setCurrentNumber(NewNumber);
 
-        GameState secondPlayerGameState = this.players.get(gameStateStarter.getRivalSession());
+        GameState secondPlayerGameState = players.get(gameStateStarter.getRivalSession());
         secondPlayerGameState.setWaitRivalMove(false);
         secondPlayerGameState.setCurrentNumber(NewNumber);
 
@@ -68,11 +75,11 @@ public class PlayersGameStateSessionsRepositoryImpl implements PlayersGameStateS
 
     @Async
     @Override
-    public CompletableFuture<Boolean> removeGameState(String sessionIdStarter) {
+    public CompletableFuture<Boolean> removeGameState(final String sessionIdStarter) {
 
-        GameState oldGameState = this.players.get(sessionIdStarter);
-        this.players.remove(oldGameState.getRivalSession());
-        this.players.remove(sessionIdStarter);
+        GameState oldGameState = players.get(sessionIdStarter);
+        players.remove(oldGameState.getRivalSession());
+        players.remove(sessionIdStarter);
         return CompletableFuture.completedFuture(true);
     }
 }

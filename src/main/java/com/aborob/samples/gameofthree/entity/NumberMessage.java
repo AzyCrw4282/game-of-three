@@ -1,4 +1,4 @@
-package com.aborob.samples.gameofthree.model;
+package com.aborob.samples.gameofthree.entity;
 
 public class NumberMessage {
 

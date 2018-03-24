@@ -1,6 +1,6 @@
 package com.aborob.samples.gameofthree.interceptor;
 
-import com.aborob.samples.gameofthree.model.GameState;
+import com.aborob.samples.gameofthree.entity.GameState;
 import com.aborob.samples.gameofthree.repository.PlayersGameStateSessionsRepository;
 import com.aborob.samples.gameofthree.repository.PlayersWaitingQueueRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,12 +37,12 @@ public class UserPrincipalHandshakeInterceptor extends DefaultHandshakeHandler {
             if (serverHttpRequest instanceof ServletServerHttpRequest) {
                 ServletServerHttpRequest servletRequest = (ServletServerHttpRequest) serverHttpRequest;
                 HttpSession session = servletRequest.getServletRequest().getSession();
-                String sessionId = session.getId();
+                final String sessionId = session.getId();
                 this.playersWaitingQueueRepository.addPlayer(sessionId);
-                GameState gameState = new GameState();
+                final GameState gameState = new GameState();
                 gameState.setGameOn(false);
-                this.playersGameStateSessionsRepository.addGameStateSession(new String(sessionId), gameState);
-                principal = new UsernamePasswordAuthenticationToken(new String(sessionId), "",
+                this.playersGameStateSessionsRepository.addGameStateSession(sessionId, gameState);
+                principal = new UsernamePasswordAuthenticationToken(sessionId, "",
                         Arrays.asList(new SimpleGrantedAuthority("ANONYMOUS")));
             }
         }
