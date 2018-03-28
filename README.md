@@ -5,7 +5,7 @@ https://game-of-three-hisham.herokuapp.com/
 # Overview
 
 This a game played through WebSockets. Game of Three, when a player starts, he is added to a queue to wait for a rival, once a rival player is available, either of them can incept a random (whole) number and sends it to the second a player as an approach of starting the game.
-The receiving player can now always choose between adding one of  {­1, 0, 1} to get to a number that is divisible by 3. Divide it by three. The resulting whole number is then sent back to the original sender.
+The receiving player can now always choose between adding one of  {­1, 0, 1} to get to a number that is divisible by 3. Divide it by 3. The resulting whole number is then sent back to the original sender.
 
 # Design
 
