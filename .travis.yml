@@ -1,4 +1,5 @@
 language: java
+install: true
 jdk:
  - oraclejdk8
 deploy:
@@ -6,3 +7,15 @@ deploy:
  api-key:
   secure: $HEROKU_API_KEY
 app: game-of-three-hisham
+
+addons:
+  sonarcloud:
+    organization: "hishamaborob-github"
+
+script:
+  - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent package sonar:sonar
+
+cache:
+  directories:
+    - '$HOME/.m2/repository'
+    - '$HOME/.sonar/cache'
